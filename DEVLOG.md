@@ -14,6 +14,42 @@ Entry format:
 
 ---
 
+## 2026-08-23 · Session 2 — Harness research + stack decisions locked
+
+**Time:** 22:30 – 23:00 IST · **Phase:** Planning → Requirements frozen · **Milestone:** M0 → M1
+
+### What
+
+- Confirmed scope: **multi-agent pipeline** (triage → RAG resolution → escalation → HITL gate), explicitly *not* a chatbot.
+- Settled the "do we build a harness?" question: **LangGraph is the harness** (graph execution, state, tool loop, checkpointing, `interrupt`/resume). We build the app layer: agent nodes, tools, state schema, LLM router — and the **eval harness**, which is genuinely ours.
+- Researched the freshly released **DeepSeek Harness (`dsh`)** + its underlying **Cordis paper** (*"A Programming Paradigm for Spatiotemporal Composability"*, PKU + DeepSeek): MIT-licensed, everything-is-a-plugin agent harness, dev preview since 2026-08-13.
+- Locked remaining stack decisions via Q&A with the project owner (see D5–D9).
+
+### Why
+
+- **dsh considered → not adopted:** TypeScript/Node, day-old preview with promised breaking changes; Aegis needs Python-side durable checkpointing + `interrupt()` HITL that LangGraph ships today. Kept as *reference architecture* for plugin-style boundaries between our nodes/tools/approval UI.
+- Frozen decisions remove all ambiguity before scaffolding; each maps to a concrete milestone task.
+
+### Decisions log (new)
+
+| # | Decision | Rationale | Alternatives rejected |
+|---|---|---|---|
+| D5 | Router order: **Groq primary → Gemini fallback** | Keys actually on hand; matches plan's intent | OpenAI-first (no key yet); DeepSeek in router |
+| D6 | **ChromaDB embedded** for RAG v1 | Zero infra for a 60–100 ticket demo; swappable behind a retriever interface | pgvector+Postgres from day 1 (infra overhead) |
+| D7 | **Streamlit** approval UI (M2) | Ships in hours; differentiator is eval/CI gate, not pixels | Next.js minimal (deferred; revisit if time allows) |
+| D8 | **uv** for Python tooling | Fast resolver + lockfile; 2026 default for new projects | pip+venv, poetry |
+| D9 | GitHub remote **after** M1 scaffold lands | First pushed commit shows real code, cleaner history | Pushing bootstrap-only repo now |
+| D10 | dsh/Cordis → reference reading only | See above | Adopting dsh as our harness |
+
+### Next
+
+- [x] **M1a** — install uv; scaffold package (`aegis` src-layout, pyproject, ruff, pytest)
+      *(done 23:10 IST — uv 0.12.5, Python 3.12 venv, 2 tests passing, ruff clean)*
+- [ ] **M1b/c** — LangGraph skeleton + Groq/Gemini router + Langfuse tracing
+- [ ] Create remote `aegis-support-copilot` and push once M1 compiles + tests pass (D9)
+
+---
+
 ## 2026-08-23 · Session 1 — Bootstrap: skills, git repo, devlog
 
 **Time:** 22:00 – 22:30 IST · **Phase:** Planning → Repo initialized · **Milestone:** M0 (setup)
