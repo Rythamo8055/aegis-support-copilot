@@ -14,6 +14,51 @@ Entry format:
 
 ---
 
+## 2026-08-24 · Session 6 — M3a: golden dataset v1
+
+**Time:** 02:00 – 02:45 IST · **Phase:** Ground truth for the judge · **Milestone:** M3a ✅
+
+### What shipped
+
+| Item | Detail |
+|---|---|
+| `datasets/golden_v1.jsonl` | **60 labeled tickets** — the ground-truth corpus every future prompt/model change gets scored against |
+| `src/aegis/evals/dataset.py` | `GoldenCase` dataclass + `load_golden()` + `validate_cases()` — schema enforcement at load time |
+| `tests/test_dataset.py` | 4 tests: validity, category/priority coverage, edge-case tags present, KB references resolve. **24 tests total** |
+
+### Dataset composition
+
+| Slice | Count | Examples |
+|---|---|---|
+| Billing | 14 | duplicate charges, refund timelines, chargeback threats, GST invoices, >limit refunds |
+| Technical | 14 | crashes, login loops, outages (critical), webhook dupes, corrupted exports |
+| Account | 12 | password resets, deletion/GDPR, 2FA failures, account takeover (critical), anomaly-flag routing |
+| Other | 8 | feature requests, sales/press/partnership, thank-you note |
+| Edge cases | 12 | vague ("doesnt work"), all-caps angry repeat contact, multi-issue ticket, Spanish ticket, public data breach (critical), legal hold vs deletion conflict, cancelled-but-charged, bereavement access |
+
+### Labeling rules used
+
+| Field | Convention |
+|---|---|
+| `category` / `priority` | single primary intent; enum-validated against the same sets the triage node uses |
+| `needs_escalation` | true when policy demands human: disputes, breach, legal, exec/SLA pressure, bereavement, supervisor-limit refunds |
+| `expected_kb_ids` | docs a *correct grounded answer must* use — powers citation recall in M3b |
+| `notes` | rationale on tricky cases (interview + calibration reference) |
+
+### Why
+
+- **Dataset-as-code in-repo:** versioned with prompts so any eval run is reproducible at an exact commit; no external dataset download flakiness.
+- **Edge slice is deliberate:** vague, angry, non-English, legal-hold and bereavement cases are where naive copilots embarrass themselves — and exactly what interviewers ask about.
+- **Validation as tests:** a malformed label now breaks CI before it ever poisons a metrics baseline.
+
+### Next
+
+- [ ] **M3b** — eval runner: score triage accuracy + escalation agreement + citation recall per case; per-prompt-version report JSON
+- [ ] **M3c** — LLM-judge faithfulness scoring; calibrate ≥0.8 agreement vs these labels
+- [ ] **M4** — GitHub Actions gate: block PR on metric regression >2% vs committed baseline
+
+---
+
 ## 2026-08-24 · Session 5 — M2 done: GitHub live, durable runs, HITL approval UI
 
 **Time:** 00:45 – 02:00 IST · **Phase:** Production patterns land · **Milestone:** M2 ✅ · **Repo public** 🎉
