@@ -14,6 +14,65 @@ Entry format:
 
 ---
 
+## 2026-08-24 · Session 7 — M3b + M4: eval runner, baseline, CI gate · M3c quota-blocked
+
+**Time:** 03:00 – 04:30 IST · **Phase:** The gate exists · **Milestone:** M3b ✅ M3c ⏳ M4 ✅ (code)
+
+### What shipped
+
+| Item | Detail |
+|---|---|
+| `evals/runner.py` | Runs every golden case through the real graph; computes 6 metrics incl. citation recall + grounding violations; emits timestamped report JSON |
+| **`evals/baseline.json`** | Committed reference numbers from a full live run of all 60 tickets |
+| `evals/gate.py` | Regression comparator: blocks if any core metric drops >2 pts or grounding violations rise >2 pts |
+| `evals/judge.py` | LLM-as-judge prompts (faithfulness verdicts + escalation prediction), versioned like agent prompts |
+| `.github/workflows/ci.yml` | lint → offline tests → preflight → seed KB → **eval vs baseline, fails the PR on regression** |
+| README | Architecture diagram, baseline table, quickstart, demo commands |
+| tests | +12 offline (runner, metrics math, gate thresholds, judge parsing). **36 total** |
+
+### Baseline v1 (live run: 60/60 cases, 0 pipeline errors)
+
+| Metric | Value | Read |
+|---|---|---|
+| Triage category accuracy | **86.7%** | solid for v1 prompts |
+| Priority accuracy | 61.7% | weakest metric; subjective labels + strict matching — improvement target |
+| Escalation agreement | **81.7%** (F1 0.686) | already near the plan's ≥0.8 bar |
+| Citation recall | 53.4% | strict expected-set matching @ k=3 retrieval |
+| Grounding violations | **0.0%** | runtime citation filter = zero hallucinated KB refs |
+
+### Incident: daily token quota wall (great failure story)
+
+| | |
+|---|---|
+| What | Groq free tier caps at 200k tokens/day; the full eval consumed ~199.8k. Mid-calibration every Groq call returned 429; router failed over to Gemma, which also dropped one connection |
+| Why it matters | Proves why the router + fail-open defaults exist; baseline was captured seconds before the wall |
+| Fix shipped | Client-side timeouts (`request_options.timeout`) so a wedged provider call can never hang a run again |
+| Follow-up | Rerun calibration when quota resets: `uv run python scripts/calibrate_judge.py` (writes `evals/reports/judge_calibration.json`, exits 0 if agreement ≥ 0.8) |
+
+### Also learned (tooling)
+
+Background jobs spawned inside an agent shell die with the process group when a tool
+call times out — `setsid nohup ... < /dev/null &` detaches properly. Logged because it
+will bite again.
+
+### Definition-of-done scorecard (PLAN.md)
+
+| Requirement | Status |
+|---|---|
+| Multi-agent pipeline + HITL + durable resume | ✅ demoed live |
+| Eval harness + report across prompt/model versions | ✅ runner + reports dir (more versions = future runs) |
+| CI red-PR screenshot | ⬜ needs a real PR touching prompts (secrets must be added to GitHub first) |
+| Cost/latency docs | ⬜ partial (quota incident logged); Langfuse wiring pending deploy |
+| Live deploy + demo video | ⬜ next session |
+
+### Next
+
+- [ ] Add `GROQ_API_KEY` / `GEMINI_API_KEY` to GitHub repo secrets → open a cosmetic PR to watch the gate go green/red
+- [ ] Rerun `scripts/calibrate_judge.py` post-quota-reset; record agreement number
+- [ ] Deploy (Render/Fly + Streamlit Cloud) + record demo video
+
+---
+
 ## 2026-08-24 · Session 6 — M3a: golden dataset v1
 
 **Time:** 02:00 – 02:45 IST · **Phase:** Ground truth for the judge · **Milestone:** M3a ✅

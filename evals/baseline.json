@@ -1,0 +1,25 @@
+{
+  "dataset": "golden_v1.jsonl",
+  "n_cases": 60,
+  "prompt_versions": {
+    "triage": "v1",
+    "resolution": "v1",
+    "escalation": "v1"
+  },
+  "models": {
+    "primary": "openai/gpt-oss-120b",
+    "fallback": "gemma-4-31b-it"
+  },
+  "generated_at": "2026-08-23T20:16:16.965863+00:00",
+  "metrics": {
+    "n_evaluated": 60,
+    "pipeline_errors": 0,
+    "triage_category_accuracy": 0.8667,
+    "priority_accuracy": 0.6167,
+    "escalation_agreement_accuracy": 0.8167,
+    "escalation_f1": 0.6857,
+    "citation_recall": 0.5342,
+    "n_citation_cases": 39,
+    "grounding_violation_rate": 0.0
+  }
+}
