@@ -41,6 +41,12 @@ Entry format:
 | D9 | GitHub remote **after** M1 scaffold lands | First pushed commit shows real code, cleaner history | Pushing bootstrap-only repo now |
 | D10 | dsh/Cordis → reference reading only | See above | Adopting dsh as our harness |
 
+### Addendum · 23:40 IST — API keys verified
+
+- Both provider keys received and stored in local `.env` (gitignored, never committed); verified via live API calls: Groq `200`, Gemini `200`.
+- **Router defaults chosen from actually-available models:** Groq → `openai/gpt-oss-120b`; Gemini → `gemini-2.5-flash`. Note: this Groq account exposes gpt-oss/compound/qwen models but *not* `llama-3.3-70b-versatile` — plan text updated accordingly at implementation time.
+- No further keys needed until Langfuse (self-hosted, generates its own) or optional OpenAI fallback.
+
 ### Next
 
 - [x] **M1a** — install uv; scaffold package (`aegis` src-layout, pyproject, ruff, pytest)
