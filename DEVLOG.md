@@ -14,6 +14,40 @@ Entry format:
 
 ---
 
+## 2026-08-23 · Session 3 — M1b: router, preflight, agent graph skeleton
+
+**Time:** 23:00 – 23:30 IST · **Phase:** First real code · **Milestone:** M1b ✅
+
+### What
+
+- `config.py` — pydantic-settings loading `.env` (groq/gemini keys, both model names, Gemma-only per owner policy).
+- `llm/router.py` — `LLMRouter`: Groq primary → Gemma fallback, provider-agnostic `invoke(prompt) -> str`; providers built via `build_providers()` so tests inject fakes.
+- `preflight.py` — D11 implemented: `uv run python -m aegis.preflight` pings **both** providers before any app usage; exits non-zero on failure. Live run: groq OK, gemma OK.
+- `graph/` — LangGraph skeleton: `TicketState`, triage → (conditional) → resolution → escalation → END; nodes are factories taking the router; strict-JSON prompts with tolerant `extract_json` + safe fallbacks (fail-open with defaults, never crash on bad model output).
+- Tests: **10 passed, offline only** — scripted `ScriptedRouter` + langchain fake models prove routing, conditional branch skipping resolution, and garbage-output resilience without touching the network.
+- Live E2E acceptance: a double-charge billing ticket ran through the real graph — triaged `billing/high/escalate`, conditional edge correctly skipped resolution, escalation agent returned reason + recommended action.
+
+### Why
+
+- **Nodes as factories over injected routers:** keeps graph logic testable offline and later swappable for eval harness mocks (M3) — no monkeypatching needed.
+- **Fail-open parsing:** support pipeline should degrade to defaults + human review rather than die mid-run; ties into M2's HITL gate.
+- **Checkpointer left out of `build_graph` defaults:** MemorySaver forces `thread_id` config on every invoke; durable persistence arrives properly in M2 (SQLite), so skeleton stays friction-free.
+
+### Gotchas discovered (worth remembering)
+
+1. `reasoning_effort` is now an explicit first-class `ChatGroq` field — passing it via `model_kwargs` raises a pydantic error.
+2. `GenericFakeChatModel` takes `messages=` iterator, not `responses=`.
+3. gpt-oss reasoning eats token budget: always budget `max_completion_tokens` generously or set `reasoning_effort=low`.
+4. `langchain_google_genai` emits a noisy "AFC not recommended" warning from google-genai internals — harmless; revisit if it pollutes traces in M1c.
+
+### Next
+
+- [ ] **M1c** — Langfuse tracing on every node; ChromaDB retriever + seeded mini-KB wired into resolution prompt; prompt versioning convention
+- [ ] Create GitHub remote + push (D9 gate: M1 compiles + tests green ✅ — can push after M1c)
+- [ ] **M2** — SQLite checkpointer + kill-and-resume demo; Streamlit approval UI via `interrupt()`
+
+---
+
 ## 2026-08-23 · Session 2 — Harness research + stack decisions locked
 
 **Time:** 22:30 – 23:00 IST · **Phase:** Planning → Requirements frozen · **Milestone:** M0 → M1
