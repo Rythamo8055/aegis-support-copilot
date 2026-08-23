@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "fastapi": {
+      "source": "fastapi/fastapi",
+      "sourceType": "github",
+      "skillPath": "fastapi/.agents/skills/fastapi/SKILL.md",
+      "computedHash": "e85d9e223fbc3183b1a599bbe8b02d2edf275d046ff5bcfd14352c92cdff52b3"
+    },
+    "langgraph-docs": {
+      "source": "langchain-ai/deepagents",
+      "sourceType": "github",
+      "skillPath": "libs/cli/examples/skills/langgraph-docs/SKILL.md",
+      "computedHash": "623b8c10cbb70f70ea875d1b0901f0fb0e174a837c2d6d10707627a46ae30631"
+    },
+    "langgraph-human-in-the-loop": {
+      "source": "langchain-ai/langchain-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/langgraph-human-in-the-loop/SKILL.md",
+      "computedHash": "283821ddcbdefb404d5e9c95149364c0962857a6f1e90db33ee5a0062500a88a"
+    },
+    "langgraph-persistence": {
+      "source": "langchain-ai/langchain-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/langgraph-persistence/SKILL.md",
+      "computedHash": "0e14611b0310a7a30e9977ba99b00a11b7ea63ebdd7b0c490d03040349ead0ed"
+    },
+    "python-testing-patterns": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/python-development/skills/python-testing-patterns/SKILL.md",
+      "computedHash": "1306eea409e7eff2288d7658806cb508f18339a0ee9a686d324a0fd2570eae55"
+    }
+  }
+}
