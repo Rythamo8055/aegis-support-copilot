@@ -47,6 +47,13 @@ Entry format:
 - **Router defaults chosen from actually-available models:** Groq → `openai/gpt-oss-120b`; Gemini → `gemini-2.5-flash`. Note: this Groq account exposes gpt-oss/compound/qwen models but *not* `llama-3.3-70b-versatile` — plan text updated accordingly at implementation time.
 - No further keys needed until Langfuse (self-hosted, generates its own) or optional OpenAI fallback.
 
+### Addendum 2 · 23:55 IST — Model policy update
+
+- **Owner directive:** no `gemini-*` models; Google side must use **`gemma-4-31b-it`** only (confirmed available on our key alongside `gemma-4-26b-a4b-it`). Router becomes **Groq `openai/gpt-oss-120b` → Google `gemma-4-31b-it`**.
+- **New convention (D11):** *preflight connectivity test before any model is used by the app* — config load pings both providers and fails fast with a clear error. Implemented as part of M1c router work.
+- Live tests passed: gpt-oss-120b needs `max_completion_tokens` head-room for hidden reasoning (`reasoning_effort=low` keeps it cheap); gemma-4-31b-it responds normally via `generateContent`.
+- Process note: a malformed tool call briefly overwrote this devlog; restored from HEAD within a minute — no history lost, and the incident is logged here on principle.
+
 ### Next
 
 - [x] **M1a** — install uv; scaffold package (`aegis` src-layout, pyproject, ruff, pytest)
