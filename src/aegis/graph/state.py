@@ -17,6 +17,7 @@ class TicketState(TypedDict, total=False):
     needs_escalation: bool
     escalation_reason: str
     recommended_action: str
+    approval_status: str
     final_reply: str
 
 
@@ -31,6 +32,6 @@ Route = Literal["resolution", "escalation"]
 
 
 def route_after_triage(state: TicketState) -> Route:
-    if state.get("needs_escalation", False):
+    if state.get("priority", "") == "critical":
         return "escalation"
     return "resolution"

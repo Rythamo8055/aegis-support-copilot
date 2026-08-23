@@ -14,6 +14,55 @@ Entry format:
 
 ---
 
+## 2026-08-24 · Session 5 — M2 done: GitHub live, durable runs, HITL approval UI
+
+**Time:** 00:45 – 02:00 IST · **Phase:** Production patterns land · **Milestone:** M2 ✅ · **Repo public** 🎉
+
+### What shipped
+
+| Item | Detail |
+|---|---|
+| **GitHub remote** | `github.com/Rythamo8055/aegis-support-copilot` — created via `gh`, all commits pushed to `main` |
+| `graph/nodes.py` | New `review_gate` node: fires LangGraph `interrupt()` with ticket+draft+reason payload; applies approve / reject / edit decisions |
+| `graph/builder.py` | `hitl` flag wires gate conditionally; escalation → *(needs review?)* → review_gate / END |
+| `state.py` routing change | Only `priority=critical` skips resolution now; flagged-but-non-critical tickets get a draft **and** the human gate |
+| `pipeline.run_ticket()` | Default `hitl=True` — production entry point is safe by default |
+| `scripts/demo_durable_resume.py` | Live demo: pause at gate → "crash" → fresh process recovers pending node from SQLite → resume approve |
+| `app/approval_ui.py` | Streamlit review console: submit ticket → pause screen (category/priority/reason/draft) → Approve / Edit / Reject → final outcome |
+| tests | +6 offline (`test_hitl`, `test_durability`); shared fakes extracted to `tests/helpers.py`. **20 passing total** |
+
+### Live durability proof (real LLMs, real SQLite)
+
+| Phase | What happened |
+|---|---|
+| 1. Run | Refund-overdue ticket drafted (grounded in KB-002 timelines), escalated → **paused at `review_gate`** |
+| 2. Crash | Graph objects destroyed; only `checkpoints.db` survives |
+| 3. Restart | Fresh process, new graph instance → `get_state` recovered pending node `('review_gate',)` from disk |
+| 4. Resume | `Command(resume=approve)` → status `approved`, grounded reply finalized |
+
+### Why
+
+- **Gate after drafting, not instead of it:** first version skipped resolution for *any* escalated ticket — the human then had nothing to review. Fixed semantics: critical/security cases skip auto-drafting (per KB-003 dispute policy); everything else gets agent-assisted draft + mandatory sign-off.
+- **Separate `review_gate` node** rather than `interrupt()` inside the escalation node: avoids re-running the escalation LLM call on resume (nodes replay from the top).
+- **SQLite checkpointer now:** same API as Postgres later; durability demo works on a laptop.
+
+### Gotchas
+
+| Gotcha | Fix |
+|---|---|
+| `SqliteSaver.from_conn_string(...)` returns a context manager, not a saver — passing it to `compile()` explodes deep inside pregel | Use explicit `sqlite3.connect()` or a `with` block |
+| `Command(resume=...)` with no pending interrupt silently re-runs the graph from START | Tests must assert the pause actually happened first |
+| Cross-test imports (`from tests.test_hitl import ...`) fail — tests dir isn't a package | Shared fakes moved to `tests/helpers.py` |
+
+### Next
+
+- [ ] **M3a** — golden dataset v1 (~60–100 tickets incl. edge cases) + labeling
+- [ ] **M3b** — Ragas/DeepEval harness: faithfulness/citation metrics per prompt version
+- [ ] **M3c** — judge calibration ≥0.8 agreement vs human labels
+- [ ] **M4** — CI eval gate + deploy + demo video
+
+---
+
 ## 2026-08-24 · Session 4 — M1c: RAG retrieval, citation grounding, tracing hooks
 
 **Time:** 00:00 – 00:40 IST · **Phase:** Pipeline gets its knowledge · **Milestone:** M1c ✅ (tracing wired, server deferred)

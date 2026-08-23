@@ -9,8 +9,9 @@ def run_ticket(
     retriever=None,
     checkpointer=None,
     thread_id: str | None = None,
+    hitl: bool = True,
 ) -> TicketState:
-    app = build_graph(router, retriever=retriever, checkpointer=checkpointer)
+    app = build_graph(router, retriever=retriever, checkpointer=checkpointer, hitl=hitl)
     config: dict = {"callbacks": get_callbacks()}
     if thread_id is not None:
         config["configurable"] = {"thread_id": thread_id}

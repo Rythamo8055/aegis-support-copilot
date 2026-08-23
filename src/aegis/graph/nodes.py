@@ -1,5 +1,7 @@
 import logging
 
+from langgraph.types import interrupt
+
 from aegis.graph.prompts import (
     ESCALATION_PROMPT_V1,
     RESOLUTION_PROMPT_V1,
@@ -90,3 +92,32 @@ def make_escalation_node(router):
         }
 
     return escalation_node
+
+
+def make_review_gate_node():
+    def review_gate_node(state: TicketState) -> dict:
+        decision = interrupt(
+            {
+                "ticket_id": state.get("ticket_id", ""),
+                "subject": state.get("subject", ""),
+                "category": state.get("category", ""),
+                "priority": state.get("priority", ""),
+                "draft_reply": state.get("draft_reply", ""),
+                "escalation_reason": state.get("escalation_reason", ""),
+                "recommended_action": state.get("recommended_action", ""),
+            }
+        )
+        action = decision.get("action")
+        if action == "edit":
+            return {
+                "approval_status": "edited",
+                "final_reply": str(decision.get("reply", "")).strip(),
+            }
+        if action == "reject":
+            return {"approval_status": "rejected", "final_reply": ""}
+        return {
+            "approval_status": "approved",
+            "final_reply": state.get("draft_reply", ""),
+        }
+
+    return review_gate_node

@@ -28,8 +28,9 @@ def test_extract_json_tolerates_prose() -> None:
 
 
 def test_route_after_triage_branches() -> None:
-    assert route_after_triage({"needs_escalation": True}) == "escalation"
-    assert route_after_triage({"needs_escalation": False}) == "resolution"
+    assert route_after_triage({"priority": "critical"}) == "escalation"
+    assert route_after_triage({"needs_escalation": True, "priority": "high"}) == "resolution"
+    assert route_after_triage({"needs_escalation": False, "priority": "low"}) == "resolution"
     assert route_after_triage({}) == "resolution"
 
 
