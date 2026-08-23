@@ -14,6 +14,57 @@ Entry format:
 
 ---
 
+## 2026-08-24 · Session 4 — M1c: RAG retrieval, citation grounding, tracing hooks
+
+**Time:** 00:00 – 00:40 IST · **Phase:** Pipeline gets its knowledge · **Milestone:** M1c ✅ (tracing wired, server deferred)
+
+### What shipped
+
+| File | Purpose |
+|---|---|
+| `kb/documents.py` | 12-doc mini-KB: refund/duplicate-charge policy, chargeback handling, escalation matrix, de-escalation script |
+| `kb/retriever.py` | `KBRetriever` over embedded ChromaDB (`PersistentClient`), returns scored `Chunk`s |
+| `kb/seed.py` | `uv run python -m aegis.kb.seed` → upserts KB into `./chroma` (12 docs seeded) |
+| `graph/prompts.py` | All prompts versioned (`*_V1`) + `PROMPT_VERSIONS` registry — changes require a bump + devlog entry |
+| `graph/nodes.py` | Resolution node now retrieval-grounded; **citation filter drops LLM-cited ids not present in retrieved set** |
+| `graph/builder.py` / `pipeline.py` | Retriever injection through to graph; `run_ticket()` convenience entry with callbacks + thread_id |
+| `observability.py` | Env-gated Langfuse callback handler; **no-ops silently when keys absent** |
+| tests | 4 new offline tests (14 total): hallucinated-citation filtering, context formatting, KB integrity |
+
+### Live E2E results (both paths proven)
+
+| Ticket | Triage | Route taken | Retrieval | Outcome |
+|---|---|---|---|---|
+| "Refund not received in 10 days… disputing with bank" | billing/high/**escalate** | triage → escalation (RAG skipped by design) | — | Escalation reason + first action for human; matches KB-003 dispute policy |
+| "Need GST invoice copies from last year" | billing/medium/normal | triage → resolution → escalation | pulled `KB-001`, `KB-010`, `KB-012` | Draft grounded in KB-012 only; citations = `["KB-012"]`; correct self-service answer |
+
+### Why
+
+- **Citation grounding filter:** the eval suite (M3) needs faithfulness we can enforce mechanically — if the model cites a doc it wasn't shown, that's a bug we catch at runtime, not just at eval time.
+- **Escalation-first routing validated live:** dispute-threat tickets never get an auto-drafted reply — exactly what the KB's chargeback policy demands. The conditional edge is doing policy work, not just demo work.
+- **Tracing degrades gracefully:** no Docker on this machine for self-hosted Langfuse; env-gated no-op keeps local dev clean, real Langfuse lands with docker-compose at deploy (M2/M4).
+
+### Decisions log (new)
+
+| # | Decision | Rationale | Alternatives rejected |
+|---|---|---|---|
+| D12 | Versioned prompts (`*_V1` registry) | M3 compares prompt versions; CI gate diffs against baseline | Free-floating prompt strings |
+| D13 | Citation filter (LLM ids ∩ retrieved ids) | Runtime faithfulness enforcement; feeds M3 metrics | Trusting raw model citations |
+| D14 | Langfuse env-gated optional tracing | No local Docker today; zero-friction offline tests | Blocking startup on missing Langfuse |
+
+### Gotchas
+
+- Chroma default embedding downloads an ONNX model on first seed (~1 min) — expected, one-time.
+- Escalated tickets legitimately have `draft_reply=None` — UI (M2) must render "routed to human" state distinctly.
+
+### Next
+
+- [ ] Create GitHub remote + push (**D9 gate now satisfied**: M1 compiles, 14 tests green)
+- [ ] **M2a** — SQLite checkpointer via `run_ticket(thread_id=...)`; kill-and-resume demo
+- [ ] **M2b** — Streamlit approval UI consuming `interrupt()`
+
+---
+
 ## 2026-08-23 · Session 3 — M1b: router, preflight, agent graph skeleton
 
 **Time:** 23:00 – 23:30 IST · **Phase:** First real code · **Milestone:** M1b ✅

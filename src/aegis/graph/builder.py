@@ -4,10 +4,10 @@ from aegis.graph.nodes import make_escalation_node, make_resolution_node, make_t
 from aegis.graph.state import TicketState, route_after_triage
 
 
-def build_graph(router, checkpointer=None):
+def build_graph(router, retriever=None, checkpointer=None):
     builder = StateGraph(TicketState)
     builder.add_node("triage", make_triage_node(router))
-    builder.add_node("resolution", make_resolution_node(router))
+    builder.add_node("resolution", make_resolution_node(router, retriever=retriever))
     builder.add_node("escalation", make_escalation_node(router))
 
     builder.add_edge(START, "triage")

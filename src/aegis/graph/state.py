@@ -13,6 +13,7 @@ class TicketState(TypedDict, total=False):
     citations_context: str
     draft_reply: str
     citations: list[str]
+    retrieved_ids: list[str]
     needs_escalation: bool
     escalation_reason: str
     recommended_action: str
