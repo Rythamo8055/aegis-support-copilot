@@ -1,0 +1,19 @@
+{
+  "judge_versions": {
+    "faithfulness": "v1",
+    "escalation": "v1"
+  },
+  "n_cases": 20,
+  "escalation_agreement": 0.9,
+  "target_agreement": 0.8,
+  "meets_target": true,
+  "faithfulness_pass_rate": 1.0,
+  "n_faithfulness_judged": 12,
+  "generated_at": "2026-08-24T12:58:52.722646+00:00",
+  "details": [
+    {
+      "case_id": "g-b08",
+      "faithfulness_error": "all providers failed -> groq: Connection error. | gemma: Server disconnected without sending a respo"
+    }
+  ]
+}

@@ -81,6 +81,21 @@ will bite again.
 | Gotcha 2 | Background jobs die with the agent shell's process group on tool-call timeout — `setsid nohup … < /dev/null &` is the reliable detach |
 | Status | Gemma-only calibration is **slow** (~2 min/case: verbose outputs + disconnect retries). 20-case run in flight; full 60-case judge calibration queued for tomorrow's fresh Groq quota — one command: `uv run python scripts/calibrate_judge.py` |
 
+### Addendum 2 · Session 7 (final) — M3c ✅ judge calibrated
+
+`evals/reports/judge_calibration.json` (20-case run, Gemma fallback mode):
+
+| Metric | Result | Target |
+|---|---|---|
+| Escalation judge vs human-label agreement | **0.90** | ≥0.8 ✅ |
+| Faithfulness pass rate | **1.00** (12 judged drafts) | informational |
+| Verdict | `meets_target: true` | PLAN.md M3 bar cleared |
+
+Caveat logged honestly: n=20 subset, Gemma-only mode; optional strengthener tomorrow =
+full 60-case rerun on Groq quota (`--limit` omitted). With this, **M0–M4 are all
+functionally complete**; remaining definition-of-done items are deploy + demo video +
+red-PR screenshot.
+
 ---
 
 ## 2026-08-24 · Session 6 — M3a: golden dataset v1
