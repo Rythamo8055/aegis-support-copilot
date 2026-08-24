@@ -31,7 +31,7 @@ def _build_gemma(settings: Settings) -> BaseChatModel:
         google_api_key=settings.gemini_api_key,
         temperature=0,
         max_output_tokens=2048,
-        request_options={"timeout": 45},
+        request_timeout=45,
     )
 
 
