@@ -1,3 +1,4 @@
+import argparse
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -12,7 +13,13 @@ TARGET_AGREEMENT = 0.8
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--limit", type=int, default=None)
+    args = parser.parse_args()
+
     cases = load_golden()
+    if args.limit:
+        cases = cases[: args.limit]
     router = LLMRouter()
     retriever = KBRetriever()
 
@@ -41,7 +48,7 @@ def main() -> int:
             except Exception as exc:
                 details.append({"case_id": case.id, "faithfulness_error": str(exc)[:100]})
 
-        if index % 15 == 0:
+        if index % 5 == 0:
             print(f"  calibrated {index}/{len(cases)}", flush=True)
 
     agreement = esc_correct / len(cases) if cases else 0.0

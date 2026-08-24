@@ -71,6 +71,16 @@ will bite again.
 - [ ] Rerun `scripts/calibrate_judge.py` post-quota-reset; record agreement number
 - [ ] Deploy (Render/Fly + Streamlit Cloud) + record demo video
 
+### Addendum · Session 7 (later) — Gemma fallback mode + quota workarounds
+
+| What | Detail |
+|---|---|
+| Discovery | Google/Gemma quota was **not** exhausted — only Groq's TPD cap. Router can run all-Gemma by overriding `GROQ_API_KEY=""` in env (pydantic-settings: real env beats `.env`); Groq auth fails instantly → every call lands on Gemma |
+| Bug caught | Live smoke test exposed wrong kwarg `request_options` → fixed to `request_timeout=45` (`baa5cc8`) |
+| New flag | `calibrate_judge.py --limit N` for subset calibration runs |
+| Gotcha 2 | Background jobs die with the agent shell's process group on tool-call timeout — `setsid nohup … < /dev/null &` is the reliable detach |
+| Status | Gemma-only calibration is **slow** (~2 min/case: verbose outputs + disconnect retries). 20-case run in flight; full 60-case judge calibration queued for tomorrow's fresh Groq quota — one command: `uv run python scripts/calibrate_judge.py` |
+
 ---
 
 ## 2026-08-24 · Session 6 — M3a: golden dataset v1
